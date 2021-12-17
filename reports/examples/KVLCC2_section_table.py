@@ -64,7 +64,7 @@ def show():
         'a_3':r'$a_3$',
 
     }
-    
+
     units = {
         'x':r'$[m]$',
         'beam':r'$[m]$',
@@ -77,6 +77,11 @@ def show():
 
     }
 
-    lt = LateXTable(section_table.round(decimals=4), units=units, rename=rename, caption='KVLCC2 section table', label='kvlcc2_section_table')
-    return lt
+    return LateXTable(
+        section_table.round(decimals=4),
+        units=units,
+        rename=rename,
+        caption='KVLCC2 section table',
+        label='kvlcc2_section_table',
+    )
 

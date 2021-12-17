@@ -44,29 +44,29 @@ def show(amplitudes, amplitudes_motions, models_mdl, ylim=None, show_FNPF=False)
     results_.set_index('phi_a_deg', inplace=True)
     fig,ax=plt.subplots()
     plot_ikeda(df_amplitudes=amplitudes[id], results=results_, paper_name=row.paper_name, ax=ax)
-    
+
     if show_FNPF:
         plot_amplitudes(df_amplitudes=df_amplitudes_motions, source='FNPF', paper_name=row.paper_name,
                         ax=ax, color='red')
 
     ax.legend()
-    if not ylim is None:
+    if ylim is not None:
         ax.set_ylim(ylim)
 
     ax.set_ylabel(r'$B$ $[Nm \cdot s]$')
     ax.set_xlabel(r'$\phi_a$ $[deg]$')
 
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles=handles[0:1], labels=labels[0:1], loc='upper left')
+    ax.legend(handles=handles[0:1], labels=labels[:1], loc='upper left')
 
 def show_frequency(df_results, amplitudes, amplitudes_motions, ylim=None):
     
 
     fig,ax=plt.subplots()
 
-    
+
     df_motions_ikeda = df_results.loc[[best_motions_ikeda]]
-    
+
     for id,row in df_motions_ikeda.iterrows(): 
         df_amplitudes = amplitudes_motions[id].copy()
 
@@ -78,7 +78,7 @@ def show_frequency(df_results, amplitudes, amplitudes_motions, ylim=None):
     row = mdl_results.df_rolldecays.loc[id]
     plot_amplitudes(df_amplitudes=amplitudes[id], source='model test', paper_name=row.paper_name, ax=ax)
 
-    if not ylim is None:
+    if ylim is not None:
         ax.set_ylim(ylim)
 
     ax.set_ylabel(r'$B$ $[Nm \cdot s]$')

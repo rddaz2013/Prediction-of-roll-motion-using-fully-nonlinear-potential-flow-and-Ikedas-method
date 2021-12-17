@@ -60,8 +60,7 @@ class RollDecayStateSpace():
             phi1d = states[1]
             phi2d = accelaration_lambda(**self.parameters, phi=phi, phi1d=phi1d)
 
-            d_states_dt = np.array([phi1d, phi2d])
-            return d_states_dt
+            return np.array([phi1d, phi2d])
 
         def simulate(self,t,phi0=np.deg2rad(10),phi1d0=0):
 
@@ -71,8 +70,7 @@ class RollDecayStateSpace():
 
             result = solve_ivp(fun=self.time_step, t_span=t_span,  y0=initial_state, t_eval=t)
             assert result.success
-            df_result = pd.DataFrame(index=result.t, data=result.y.T, columns = ['phi','phi1d'])
-            return df_result
+            return pd.DataFrame(index=result.t, data=result.y.T, columns = ['phi','phi1d'])
 
 phi_0 = 35
 phi_a_deg = np.linspace(0,phi_0, 100)

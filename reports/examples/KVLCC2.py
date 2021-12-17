@@ -39,7 +39,7 @@ def show():
         'dens' : r'$rho$',
         'draught' : r'$T$',
     }
-    
+
     units = {
         'LPP' : r'$[m]$',
         'B' : r'$[m]$',
@@ -52,5 +52,10 @@ def show():
     }
 
     table_parameters = table_parameters.round(decimals=3)
-    lt = LateXTable(table_parameters, units=units, rename=rename, caption='KVLCC2 model data', label='kvlcc2_model_data')
-    return lt
+    return LateXTable(
+        table_parameters,
+        units=units,
+        rename=rename,
+        caption='KVLCC2 model data',
+        label='kvlcc2_model_data',
+    )

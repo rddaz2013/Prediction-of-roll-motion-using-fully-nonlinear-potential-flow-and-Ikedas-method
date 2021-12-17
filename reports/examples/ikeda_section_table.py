@@ -39,6 +39,4 @@ def show():
     }
     section_table.rename(columns=rename, inplace=True)
 
-    lt = LateXTable(section_table, print_latex_longtable=False)
-
-    return lt
+    return LateXTable(section_table, print_latex_longtable=False)

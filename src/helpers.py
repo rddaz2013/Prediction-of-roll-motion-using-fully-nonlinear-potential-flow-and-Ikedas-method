@@ -15,7 +15,7 @@ from rolldecayestimators import ikeda_speed
 from rolldecayestimators.ikeda_naked import eddy_sections
 import rolldecayestimators.ikeda_naked as ikeda_naked
 
-def get_ikeda(indata_file_path:str, output_file_path:str, mdl_meta_data:pd.Series,IkedaClass=rolldecayestimators.ikeda.Ikeda, omega0=None, phi_a=None)->rolldecayestimators.ikeda.Ikeda:
+def get_ikeda(indata_file_path:str, output_file_path:str, mdl_meta_data:pd.Series,IkedaClass=rolldecayestimators.ikeda.Ikeda, omega0=None, phi_a=None) -> rolldecayestimators.ikeda.Ikeda:
     """setup an Ikeda class object
 
     Parameters
@@ -38,26 +38,17 @@ def get_ikeda(indata_file_path:str, output_file_path:str, mdl_meta_data:pd.Serie
     """
 
     scale_factor = mdl_meta_data.scale_factor
-    
+
     ## Load ScoresII results
     indata = Indata()
     indata.open(indataPath=indata_file_path)
     output_file = OutputFile(filePath=output_file_path)
-        
+
     w = omega0
     V = mdl_meta_data.ship_speed*1.852/3.6/np.sqrt(scale_factor)
-    
-    if not mdl_meta_data.BKL:
-        BKL=0
-    else:
-        BKL=mdl_meta_data.BKL/scale_factor
-    
-    if not mdl_meta_data.BKB:
-        BKB = 0
-    else:
-        BKB=mdl_meta_data.BKB/scale_factor
-    
-    
+
+    BKL = 0 if not mdl_meta_data.BKL else mdl_meta_data.BKL/scale_factor
+    BKB = 0 if not mdl_meta_data.BKB else mdl_meta_data.BKB/scale_factor
     kg=mdl_meta_data.kg/scale_factor
     #S_f=mdl_meta_data.S/(scale_factor**2)
 
@@ -67,7 +58,7 @@ def get_ikeda(indata_file_path:str, output_file_path:str, mdl_meta_data:pd.Serie
     if not isinstance(ikeda, rolldecayestimators.ikeda.IkedaR):
         R = mdl_meta_data.R/scale_factor  
         ikeda.R = R
-        
+
     return ikeda
 
 def calculate_ikeda(ikeda:rolldecayestimators.ikeda.Ikeda, omega0=None, phi_a=None)->pd.DataFrame:
@@ -209,50 +200,43 @@ def calculate_lewis(row:pd.Series):
 def calculate_B_hat(parameters, g=9.81, rho=1000, **kwargs):
     
     a, a_1, a_3, sigma_s, H = calculate_lewis(parameters)
-    
+
     OG=parameters['OG/d']*parameters.d
     R = parameters.R 
-        
+
     w = lambdas.omega_from_hat(b=parameters.B, g=g, omega_hat=parameters.w_hat)
     #B_E0_s = eddy_sections(bwl=parameters.B, a_1=a_1, a_3=a_3, sigma=sigma_s, H0=H, Ts=parameters.d,
     #         OG=OG, R=R, wE=w, fi_a=parameters.phi_a, ra=rho)
     #B_E0 = B_E0_s*parameters.L
-    
+
     #Disp = parameters.volume
     #B_E0_hat = lambdas.B_to_hat_lambda(B=B_E0, Disp=Disp, beam=parameters.B, g=g, rho=rho)
     #B_E0_star_hat = B_E0_hat*3*np.pi/8
-    
+
     L = parameters.L
     phi_a=parameters.phi_a
     d = parameters.d
-    Disp = parameters.volume 
+    Disp = parameters.volume
     B = parameters.B
     omega_hat=parameters.w_hat
 
     C_r = ikeda_naked.calculate_C_r(bwl=parameters.B, a_1=a_1, a_3=a_3, sigma=sigma_s, H0=H, d=parameters.d,OG=OG, R=R, ra=rho)
-    B_E0_hat = 4*L*d**4*omega_hat*phi_a/(3*pi*Disp*B**2)*C_r    
-    
     #B_E0_hat*=(1 + 0.5 + 10*R/B/phi_a + 1000*(R/B)**2)  # Faking...
-    
-    return B_E0_hat
+
+    return 4*L*d**4*omega_hat*phi_a/(3*pi*Disp*B**2)*C_r
 
 
 def calculate_B_star_hat(parameters, g=9.81, rho=1000, **kwargs):
   
-    B_E0_hat = calculate_B_hat(parameters=parameters, g=g, rho=rho, **kwargs)   
-    B_E0_star_hat = B_E0_hat*3*np.pi/8
-    
-    return B_E0_star_hat
+    B_E0_hat = calculate_B_hat(parameters=parameters, g=g, rho=rho, **kwargs)
+    return B_E0_hat*3*np.pi/8
 
 def estimate_sigma(b,t,R):
     
-    A_b = R**2 - R**2*np.pi/4       
+    A_b = R**2 - R**2*np.pi/4
     A = b*t - A_b
-    sigma = A/(b*t)
-    
-    return sigma
+    return A/(b*t)
 
 def estimate_bilge_radius(B,d,sigma,**kwargs):
-    A = sigma*B*d  
-    r = np.sqrt((B*d-A)/(1-np.pi/4))
-    return r
+    A = sigma*B*d
+    return np.sqrt((B*d-A)/(1-np.pi/4))

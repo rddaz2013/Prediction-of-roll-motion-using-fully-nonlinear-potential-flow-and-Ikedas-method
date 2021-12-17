@@ -34,18 +34,18 @@ class BibTexPreprocessor(Preprocessor):
     def create_bibentry(self, refkey, reference, doi_title=True):
         
         reference = deepcopy(reference)
-        
+
         entry = "\n"
         entry += "@article{" + refkey + ",\n"
 
-        if not 'author' in reference:
+        if 'author' not in reference:
             raise NoAuthorError('No author for reference:%s' % reference)
 
 
         entry += "  author = {"
         entry += " and ".join([a["family"] + ", " + a["given"] for a in reference["author"]])
         entry += "}, \n"
-        
+
         items = {
             'title' : ['title'],
             'year' : ['issued','year'],
@@ -59,32 +59,29 @@ class BibTexPreprocessor(Preprocessor):
 
         }
 
-        if not "container-title" in reference:
-            if "publisher" in reference:
-                reference["container-title"]=reference["publisher"]  # dirty fix
+        if "container-title" not in reference and "publisher" in reference:
+            reference["container-title"]=reference["publisher"]  # dirty fix
 
 
-        if doi_title:
-            if 'DOI' in reference:
-                reference['title'] = '%s (doi:%s)' % (reference['title'],reference['DOI'])
-        
+        if doi_title and 'DOI' in reference:
+            reference['title'] = '%s (doi:%s)' % (reference['title'],reference['DOI'])
+
         first = True
         for item, path in items.items():
             
             value = get_path(d=reference, path=path)
             if value is None:
                 continue
+            if first:
+                first=False
             else:
-                if first:
-                    first=False
-                else:
-                    entry+=', \n'
+                entry+=', \n'
 
-                row = "  %s = {%s}" % (item,value)
-                
-                entry+=row  
+            row = "  %s = {%s}" % (item,value)
 
-        
+            entry+=row  
+
+
         """
         if ("title" in reference):
             entry += "  title = \{%s\} \n" % reference["title"]
@@ -109,20 +106,20 @@ class BibTexPreprocessor(Preprocessor):
         
         """
         entry += "\n}\n"
-        
-        
+
+
         return entry
 
     def fix_non_ansii_characters(self):
 
         for key, reference in self.references.items():
             
-            if not 'author' in reference:
+            if 'author' not in reference:
                 raise NoAuthorError('No author for reference:%s' % reference)
-            
+
             authors = reference['author']
             for n,author in enumerate(authors):
-                
+
                 self.references[key]['author'][n]['family'] = self.replace_non_ascii(author['family'])
                 self.references[key]['author'][n]['given'] = self.replace_non_ascii(author['given'])
 
@@ -193,8 +190,10 @@ class BibTexPreprocessor(Preprocessor):
         cell_index : int
             Index of the cell being processed (see base.py)
         """
-        if cell.cell_type == "markdown":
-            if "<div class=\"cite2c-biblio\"></div>" in cell.source:
-                replaced = re.sub("<div class=\"cite2c-biblio\"></div>", r"\\bibliography{"+resources["output_files_dir"]+"/"+resources["unique_key"]+r"} \n ", cell.source)
-                cell.source = replaced
+        if (
+            cell.cell_type == "markdown"
+            and "<div class=\"cite2c-biblio\"></div>" in cell.source
+        ):
+            replaced = re.sub("<div class=\"cite2c-biblio\"></div>", r"\\bibliography{"+resources["output_files_dir"]+"/"+resources["unique_key"]+r"} \n ", cell.source)
+            cell.source = replaced
         return cell, resources

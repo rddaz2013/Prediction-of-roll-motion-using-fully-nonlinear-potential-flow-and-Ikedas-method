@@ -78,15 +78,15 @@ def show(amplitudes, amplitudes_motions, models_mdl, ylim=None, show_FNPF=False)
     results_.set_index('phi_a_deg', inplace=True)
     fig,ax=plt.subplots()
     plot_ikeda(df_amplitudes=amplitudes[id], results=results_, paper_name=row.paper_name, ax=ax)
-    
+
     if show_FNPF:
         plot_amplitudes(df_amplitudes=df_amplitudes_motions, source='FNPF', paper_name=row.paper_name,
                         ax=ax, color='red')
 
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles=handles[0:1], labels=labels[0:1], loc='upper left')
-    
-    if not ylim is None:
+    ax.legend(handles=handles[:1], labels=labels[:1], loc='upper left')
+
+    if ylim is not None:
         ax.set_ylim(ylim)
 
     ax.set_ylabel(r'$B$ $[Nm \cdot s]$')

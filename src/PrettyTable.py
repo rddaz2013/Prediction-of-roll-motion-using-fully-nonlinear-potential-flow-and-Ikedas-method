@@ -41,24 +41,27 @@ class PrettyTable(list):
         LaTeX
         """
 
-        latex = ["""
+        latex = [
+            """
 \\begin{table}[H]
 %s
 \\center
 \\caption{%s}
 \\label{tab:%s}
-\\begin{tabular}""" % (self.fontsize, self.caption, self.label)]
-     
-        latex.append("{|"+"".join((["l|"]*len(self[0])))+"}\n")
-        
-        latex.append("\\hline\\addlinespace\n")
+\\begin{tabular}"""
+            % (self.fontsize, self.caption, self.label),
+            "{|" + "".join((["l|"] * len(self[0]))) + "}\n",
+            '\\hline\\addlinespace\n',
+        ]
+
+
         for i,row in enumerate(self):
             latex.append(" & ".join(map(format, row)))
             latex.append("\\\\ \n")
             if i==self.hline:
                 latex.append("\\hline")
-        
-        
+
+
         latex.append("""
 \\hline
 \\end{tabular}
@@ -68,10 +71,13 @@ class PrettyTable(list):
     
     
     def latex_longtable(self):
-        latex = ["\\begin{longtable}[c]{@{}"]
-        latex.append("".join((["l"]*len(self[0]))))
-        latex.append("@{}}\n")
-        latex.append("\\toprule\\addlinespace\n")
+        latex = [
+            '\\begin{longtable}[c]{@{}',
+            "".join(["l"] * len(self[0])),
+            '@{}}\n',
+            '\\toprule\\addlinespace\n',
+        ]
+
         first = True
         for row in self:
             latex.append(" & ".join(map(format, row)))

@@ -25,5 +25,4 @@ def add_quad(body:str):
         sddfdf
     Adding \quad
     """
-    body = re.sub(r'\n\n','\n\n\\quad ', body)
-    return body
+    return re.sub(r'\n\n','\n\n\\quad ', body)

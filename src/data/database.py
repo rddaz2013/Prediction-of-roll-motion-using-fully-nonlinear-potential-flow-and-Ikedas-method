@@ -65,7 +65,7 @@ def load(rolldecay_table_name='rolldecay_quadratic_b',sql=None,only_latest_runs=
         df_rolldecay.reset_index(inplace=True)
         df_rolldecay.set_index('run_id', inplace=True)
 
-    if not exclude_table_name is None:
+    if exclude_table_name is not None:
         df_exclude = pd.read_sql_table(table_name=exclude_table_name,con=engine, index_col='run_id',)
         common_index = list(set(df_rolldecay.index) - set(df_exclude.index))
         df_rolldecay=df_rolldecay.loc[common_index].copy()
@@ -73,8 +73,7 @@ def load(rolldecay_table_name='rolldecay_quadratic_b',sql=None,only_latest_runs=
     return df_rolldecay
 
 def get_db():
-    db = MDLDataBase(engine=engine)
-    return db
+    return MDLDataBase(engine=engine)
 
 def get_latest(group):
     """

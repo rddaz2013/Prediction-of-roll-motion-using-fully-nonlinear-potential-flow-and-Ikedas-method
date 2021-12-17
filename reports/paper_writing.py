@@ -93,21 +93,14 @@ def generate_nomenclature(paper_path=None,exclude_dirs=['equations']):
     equation_dict = _match_sympy_equations(eq_labels=eq_labels)
     symbols = _get_symbols(equation_dict=equation_dict)
 
-    latex_nomenclature = _generate_latex_nomenclature(symbols=symbols)
-
-    return latex_nomenclature
+    return _generate_latex_nomenclature(symbols=symbols)
 
 def _find_tex_files(paper_path, exclude_dirs=['equations']):
 
     file_paths = []
     for root, dirs, files in os.walk(paper_path, topdown=False):
 
-        # Could this directory be excluded?
-        exclude=False
-        for exclude_dir in exclude_dirs:
-            if exclude_dir in root:
-                exclude=True
-                break
+        exclude = any(exclude_dir in root for exclude_dir in exclude_dirs)
         if exclude:
             continue
 
@@ -140,24 +133,22 @@ def _find_inputs(s:str):
 
 def _match_sympy_equations(eq_labels):
     avaliable_equation_dict = {key: value for key, value in rolldecayestimators.equations.__dict__.items() if isinstance(value, sp.Eq)}
-    equation_dict = {}
-
-    for eq_label in eq_labels:
-        if eq_label in avaliable_equation_dict:
-            equation_dict[eq_label] = avaliable_equation_dict[eq_label]
-
-    return equation_dict
+    return {
+        eq_label: avaliable_equation_dict[eq_label]
+        for eq_label in eq_labels
+        if eq_label in avaliable_equation_dict
+    }
 
 def _get_symbols(equation_dict:dict):
 
     symbols = {}
-    for name,eq in equation_dict.items():
+    for eq in equation_dict.values():
         if isinstance(eq,str):
             continue
-        
+
         free_symbols = {symbol.name:symbol for symbol in eq.free_symbols}
         symbols.update(free_symbols)
-    
+
     return symbols
 
 def _latex_unit(unit:str):
@@ -203,24 +194,24 @@ def _generate_latex_nomenclature(symbols, subs=True, join_description=True, addi
                 description = additional_descriptions[symbol]
             else:
                 continue
-            
-            
-            if not description in descriptions:
+
+
+            if description not in descriptions:
                 descriptions[description] = []
-            
+
             descriptions[description].append(symbol)
             symbols_.pop(symbol.name)
 
         # Inversing this dict:
         description_rows = {items[0].name:items for description,items in descriptions.items()}
-    
+
     for name,symbol in symbols_.items():
-        if not name in description_rows:
+        if name not in description_rows:
             description_rows[name] = [symbol]
 
     content = ''
     for name,row in sorted(description_rows.items()):
-        
+
         latex=''
         first = True
         for symbol in row:
@@ -228,20 +219,19 @@ def _generate_latex_nomenclature(symbols, subs=True, join_description=True, addi
 
             latex_,description,unit = _symbol_to_latex(symbol=symbol, name=name, subs=subs, additional_descriptions=additional_descriptions, 
                                                         additions_units=additions_units)
-            
+
             if first:
                 first=False
             else:
                 latex+=','
 
             latex+='%s' % latex_
-            
+
         row = r'\nomenclature{'+latex+'}{'+description+ r'\nomunit{' + unit + '}}\n'
-        
+
         content+=row
 
-    latex_nomenclature = r"\mbox{}" + '\n' + content + '\n' + r"\printnomenclature"
-    return latex_nomenclature
+    return r"\mbox{}" + '\n' + content + '\n' + r"\printnomenclature"
 
 def _symbol_to_latex(symbol:ss.Symbol, name:str, subs=True, additional_descriptions={}, additions_units={}):
     
@@ -249,18 +239,17 @@ def _symbol_to_latex(symbol:ss.Symbol, name:str, subs=True, additional_descripti
     unit=''
     if hasattr(symbol,'description'):
         description=symbol.description
-    
+
     if symbol in additional_descriptions:
         description = additional_descriptions[symbol]            
-        
-    if len(description) == 0:
-        if name == 't':
-            description='time'
-            unit='s'
-    
+
+    if len(description) == 0 and name == 't':
+        description='time'
+        unit='s'
+
     if len(description) > 1:
         description=description[0].lower() + description[1:]
-    
+
     if hasattr(symbol, 'unit'):
         unit=unit=symbol.unit
 

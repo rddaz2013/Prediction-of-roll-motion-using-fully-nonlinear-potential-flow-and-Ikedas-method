@@ -53,9 +53,9 @@ def show(amplitudes, df_results, ylim=None):
 
     #index = df_parameters.loc[~mask_visc].index
     #index = df_parameters.index
-    
+
     index = ['kvlcc2_rolldecay_0kn','kvlcc2_rolldecay_15-5kn_ikeda_dev']
-    
+
     df_results=df_results.loc[index]
     source = 'FNPF'
     prefix='B_W'
@@ -66,7 +66,7 @@ def show(amplitudes, df_results, ylim=None):
         df_amplitudes = amplitudes[id].copy()
         reports.examples.mdl.plot_amplitudes(df_amplitudes=df_amplitudes, paper_name = row.paper_name, ax=ax, source=source, prefix=prefix)
 
-    ax.set_ylabel(r'$%s$ $[Nm \cdot s]$' % prefix)    
+    ax.set_ylabel(r'$%s$ $[Nm \cdot s]$' % prefix)
     ax.set_xlabel(r'$\phi_a$ $[deg]$')
 
     y_lim_motions = list(ax.get_ylim())
@@ -75,7 +75,7 @@ def show(amplitudes, df_results, ylim=None):
     ax.set_ylim(y_lim_motions)
     ax.grid(True)
 
-    if not ylim is None:
+    if ylim is not None:
         ax.set_ylim(ylim)
 
 def analyze_amplitudes(models):

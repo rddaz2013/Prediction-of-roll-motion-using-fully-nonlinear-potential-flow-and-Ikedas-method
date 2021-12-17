@@ -88,38 +88,36 @@ class FigureName(Preprocessor):
     def preprocess(self, nb, resources):
         #self.log.info("I'll keep only cells from %d to %d", self.start, self.end)
         #nb.cells = nb.cells[self.start:self.end]
-        
+
         for cell_id, cell in enumerate(nb['cells']):
 
             meta_data = cell['metadata']
-            if 'name' in meta_data:
+            if 'name' in meta_data and 'outputs' in cell:
+                outputs = cell['outputs']
+                output_id = 0
+                for output_id, output in enumerate(outputs):                    
+                    output = outputs[output_id]
+                    output_meta_data = output.get('metadata',None)
+                    if output_meta_data is None:
+                        continue
 
-                if 'outputs' in cell:
-                    outputs = cell['outputs']
-                    output_id = 0
-                    for output_id, output in enumerate(outputs):                    
-                        output = outputs[output_id]
-                        output_meta_data = output.get('metadata',None)
-                        if output_meta_data is None:
-                            continue
+                    filenames = output_meta_data['filenames']
 
-                        filenames = output_meta_data['filenames']
+                    output_name = 'output_%i_%i' % (cell_id, output_id)
+                    for key, value in filenames.items():
+                        if output_name in value:
 
-                        output_name = 'output_%i_%i' % (cell_id, output_id)
-                        for key, value in filenames.items():
-                            if output_name in value:
+                            # Rename to "figure":
+                            new_figure_name = value.replace(output_name, meta_data['name'])
 
-                                # Rename to "figure":
-                                new_figure_name = value.replace(output_name, meta_data['name'])
+                            # Meta data:
+                            nb['cells'][cell_id]['outputs'][output_id]['metadata']['filenames'][key] = new_figure_name       
 
-                                # Meta data:
-                                nb['cells'][cell_id]['outputs'][output_id]['metadata']['filenames'][key] = new_figure_name       
-
-                                # resources:
-                                resources['outputs'][new_figure_name] = resources['outputs'].pop(value)
+                            # resources:
+                            resources['outputs'][new_figure_name] = resources['outputs'].pop(value)
 
 
-        
+
         return nb, resources
 
 
@@ -274,7 +272,7 @@ def change_figure_paths(body:str, build_directory:str, figure_directory_name='fi
     figure_directory = os.path.join(build_directory,figure_directory_name)
     for file in os.listdir(figure_directory):
         _,ext = os.path.splitext(file)
-        if ext=='.pdf' or ext=='.png':
+        if ext in ['.pdf', '.png']:
             new_path =r'%s/%s' % (figure_directory_name,file)
             body = body.replace(file, new_path)
 
@@ -314,9 +312,7 @@ def ole_ole_ole(body:str):
 
     """
 
-    body = body.replace(r'é',r"\'e")
-
-    return body
+    return body.replace(r'é',r"\'e")
 
 def capital_section(body:str):
     """
@@ -354,8 +350,7 @@ def citep(body:str):
     to
     \citep
     """
-    body = body.replace(r'\cite',r'\citep')
-    return body
+    return body.replace(r'\cite',r'\citep')
 
 def remove_whitespaces(body:str):
     body = re.sub(r' +\n','\n', body)
@@ -416,7 +411,7 @@ def splitter_section(document):
 
     return sections
 
-equation_dict = dict()
+equation_dict = {}
 class Equation(Math):
         
     def __init__(self,data:sp.Eq,label:str, url=None, filename=None, metadata=None, max_length=150, subs=True):
@@ -439,31 +434,28 @@ class Equation(Math):
             data = data.subs(equations.nicer_LaTeX)
 
         data_text = vlatex(data)
-        if len(data_text) > max_length:
-                        
-            pattern = r'([+-]*[^+-]+)'
-            parts = re.findall(pattern, data_text)
-            lengths = np.array([len(part) for part in parts])
-            if np.any(lengths > max_length):
-                expanded = vlatex(sp.expand(data))
-                parts = re.findall(pattern, expanded)
-            
-            data_text = ''
-            row_length = len(data_text)
+        if len(data_text) <= max_length:
+            return data_text
 
-            for part in parts:
-                if (row_length + len(part)) < max_length:
-                    data_text+='%s' % part
-                    row_length+=len(part)
-                else:
-                    data_text+='\\\\ %s' % part
-                    row_length = len(part)
+        pattern = r'([+-]*[^+-]+)'
+        parts = re.findall(pattern, data_text)
+        lengths = np.array([len(part) for part in parts])
+        if np.any(lengths > max_length):
+            expanded = vlatex(sp.expand(data))
+            parts = re.findall(pattern, expanded)
 
-            data_text_ = '\\begin{aligned}\n%s\n\\end{aligned}' % data_text
-        else:
-            data_text_ = data_text
+        data_text = ''
+        row_length = len(data_text)
 
-        return data_text_
+        for part in parts:
+            if (row_length + len(part)) < max_length:
+                data_text+='%s' % part
+                row_length+=len(part)
+            else:
+                data_text+='\\\\ %s' % part
+                row_length = len(part)
+
+        return '\\begin{aligned}\n%s\n\\end{aligned}' % data_text
 
 
     

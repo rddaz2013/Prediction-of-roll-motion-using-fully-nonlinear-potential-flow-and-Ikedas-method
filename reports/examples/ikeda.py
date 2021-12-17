@@ -31,8 +31,7 @@ def plot_ikeda(df_amplitudes,results, paper_name, ax=None):
 
 def get_estimator(id,ikeda_name):
     file_name = '%s_%s.pkl' % (id,ikeda_name)
-    ikeda = joblib.load('../../models/%s' % file_name)
-    return ikeda
+    return joblib.load('../../models/%s' % file_name)
 
 def show(amplitudes, amplitudes_motions, models_mdl, ylim=None, ikeda_names = ['ikeda_r','ikeda_C_r',], id = 21338):
         
@@ -64,20 +63,20 @@ def show(amplitudes, amplitudes_motions, models_mdl, ylim=None, ikeda_names = ['
                                     rho=ikeda.rho)
 
         plot_ikeda(df_amplitudes=amplitudes[id], results=results, paper_name=row.paper_name, ax=ax)
-    
+
         #ax.set_title(paper_ikeda_names[ikeda_name])
         ax.legend(loc='upper left')
         ax.get_legend().set_visible(False)
 
-        if not ylim is None:
+        if ylim is not None:
             ax.set_ylim(ylim)
-    
+
     if len(axes) > 1:
         axes[0].set_ylabel(r'$B$ $[Nm \cdot s]$')
 
 
     handles, labels = axes[0].get_legend_handles_labels()
-    axes[0].legend(handles=handles[0:1], labels=labels[0:1], loc='upper left')
+    axes[0].legend(handles=handles[:1], labels=labels[:1], loc='upper left')
     
     
     

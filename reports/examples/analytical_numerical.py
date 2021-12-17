@@ -41,8 +41,7 @@ def show(omega0_lambda, accelaration_lambda, plot=True, dt=0.01):
             phi1d = states[1]
             phi2d = accelaration_lambda(**self.parameters, phi=phi, phi1d=phi1d)
 
-            d_states_dt = np.array([phi1d, phi2d])
-            return d_states_dt
+            return np.array([phi1d, phi2d])
 
         def simulate(self,t,phi0=np.deg2rad(10),phi1d0=0):
 
@@ -52,8 +51,7 @@ def show(omega0_lambda, accelaration_lambda, plot=True, dt=0.01):
 
             result = solve_ivp(fun=self.time_step, t_span=t_span,  y0=initial_state, t_eval=t)
             assert result.success
-            df_result = pd.DataFrame(index=result.t, data=result.y.T, columns = ['phi','phi1d'])
-            return df_result
+            return pd.DataFrame(index=result.t, data=result.y.T, columns = ['phi','phi1d'])
 
     A_44 = 1.0
     B_1 = 0.3

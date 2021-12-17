@@ -24,15 +24,14 @@ class ItemizePreprocessor(Preprocessor):
         """
 
         for result in re.finditer(r'(\* .+\W)+', body):
-        
+
             items = re.findall(r'\* (.+)', result.group(0))
 
             if len(items)==0:
                 continue
             s='\\begin{itemize}\n'
 
-            for i,item in enumerate(items):
-            
+            for item in items:
                 s+='\\item %s\n' % item
 
             s+='\\end{itemize}\n'
